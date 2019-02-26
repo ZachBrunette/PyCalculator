@@ -19,6 +19,7 @@ class Calculator:
 
         # initialize screen value as empty
         self.equation = ''
+        self.equation_evaluated = False
 
         # create buttons using method createButton
         b1 = self.create_button(7)
@@ -60,15 +61,18 @@ class Calculator:
         # this function handles what happens when you click a button
         # 'write' argument if True means the value 'val' should be written on screen,
         # if None, should not be written on screen
+        if self.equation_evaluated:
+            self.clear_screen()
+        self. equation_evaluated = False
         if write is None:
             # only evaluate code when there is an equation to be evaluated
             if text == '=' and self.equation:
                 # replace the unicode value of division ./. with python division symbol / using regex
                 self.equation = re.sub(u"\u00F7", '/', self.equation)
-                print(self.equation)
                 answer = self.evaluate(self.equation)
                 self.clear_screen()
                 self.insert_screen(answer, newline=True)
+                self. equation_evaluated = True
             elif text == u"\u232B":
                 self.clear_screen()
         else:
@@ -92,7 +96,6 @@ class Calculator:
     def evaluate(self, equation):
         termslist = []
         termslist = self.find_terms(termslist, equation)
-        print(termslist)
         answer = self.solve_equation(termslist)
         return answer
 
@@ -139,7 +142,6 @@ class Calculator:
             else:
                 finallist.append(newlist[index])
             index += 1
-        print(finallist)
         if len(finallist) != 1:
             return self.solve_equation(finallist)
         else:
