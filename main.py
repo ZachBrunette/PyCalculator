@@ -1,7 +1,8 @@
-# original idea for gui:
+# original idea for calculator gui:
 # https://medium.com/@adeyinkaadegbenro/project-build-a-python-gui-calculator-fc92bddb744d
 
 from tkinter import *
+from decimal import Decimal
 
 
 class Calculator:
@@ -65,7 +66,7 @@ class Calculator:
                 # replace the unicode value of division ./. with python division symbol / using regex
                 self.equation = re.sub(u"\u00F7", '/', self.equation)
                 print(self.equation)
-                answer = str(eval(self.equation))
+                answer = self.evaluate(self.equation)
                 self.clear_screen()
                 self.insert_screen(answer, newline=True)
             elif text == u"\u232B":
@@ -87,6 +88,62 @@ class Calculator:
         # record every value inserted in screen
         self.equation += str(value)
         self.screen.configure(state='disabled')
+
+    def evaluate(self, equation):
+        termslist = []
+        termslist = self.find_terms(termslist, equation)
+        print(termslist)
+        answer = self.solve_equation(termslist)
+        return answer
+
+    def find_terms(self, termslist, equation):
+        index = 0
+        while equation is not None:
+            if len(equation) == index:
+                termslist.append(equation[:index])
+                return termslist
+            if equation[index] == '*' or equation[index] == "/" or equation[index] == "+" or equation[index] == "-":
+                if index == 0:
+                    termslist.append(equation[index])
+                    equation = equation[(index+1):]
+                else:
+                    termslist.append(equation[:index])
+                    equation = equation[index:]
+                index = -1
+            index += 1
+
+    def solve_equation(self, termslist):
+        newlist = []
+        index = 0
+        while index < len(termslist):
+            if termslist[index] == '*' or termslist[index] == '/':
+                if termslist[index] == '*':
+                    newlist.append(Decimal(newlist.pop()) * Decimal(termslist[index+1]))
+                    index += 1
+                if termslist[index] == '/':
+                    newlist.append(Decimal(newlist.pop()) / Decimal(termslist[index + 1]))
+                    index += 1
+            else:
+                newlist.append(termslist[index])
+            index += 1
+        index = 0
+        finallist = []
+        while index < len(newlist):
+            if newlist[index] == '+' or newlist[index] == '-':
+                if newlist[index] == '+':
+                    finallist.append(Decimal(finallist.pop()) + Decimal(newlist[index+1]))
+                    index += 1
+                if newlist[index] == '-':
+                    finallist.append(Decimal(finallist.pop()) - Decimal(newlist[index + 1]))
+                    index += 1
+            else:
+                finallist.append(newlist[index])
+            index += 1
+        print(finallist)
+        if len(finallist) != 1:
+            return self.solve_equation(finallist)
+        else:
+            return str(finallist[0])
 
 
 root = Tk()
